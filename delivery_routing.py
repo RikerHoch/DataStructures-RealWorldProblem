@@ -192,3 +192,39 @@ def display_result(label: str, result: Optional[SearchResult]) -> None:
     print(f"{label} distance: {result.distance_km:.1f} km")
     print(f"{label} nodes expanded: {result.nodes_expanded}")
     print()
+
+def main() -> None:
+    network = DeliveryNetwork()
+    start, goal = "Warehouse", "Customer"
+
+    bfs_result = BreadthFirstSearch.search(network, start, goal)
+    astar_result = AStarSearch.search(network, start, goal)
+
+    print("=== Delivery Routing Comparison ===")
+    display_result("BFS", bfs_result)
+    display_result("A*", astar_result)
+
+    if bfs_result and astar_result:
+        print("Note: BFS minimized road connections, not total kilometers")
+        if bfs_result.nodes_expanded:
+            reduction = (
+                (bfs_result.nodes_expanded - astar_result.nodes_expanded)
+                / bfs_result.nodes_expanded
+            ) * 100
+            print(f"Node-expansion change (BFS baseline): {reduction:.1f}%")
+            print("A negative value indicates A* expanded more nodes in this test.")
+        print()
+
+        driver = Driver("Alice")
+        customer = Customer("Bob")
+        system = DeliverySystem(network)
+        system.subscribe(driver)
+        system.subscribe(customer)
+
+        print("=== Observer Pattern Demonstration ===")
+        system.recalculate_route(start, goal)
+        system.complete_delivery(customer.name)
+
+
+if __name__ == "__main__":
+    main()
