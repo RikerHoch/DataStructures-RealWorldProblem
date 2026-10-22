@@ -6,13 +6,14 @@ from typing import List, Tuple, Dict, Optional
 
 
 @dataclass
-class SearchResult:
+class SearchRes:
     path: List[str]
     distance_km: float
     nodes_expanded: int
 
 
 class DeliveryNetwork:
+    # Weighted, undirected graph with approximate map coordinates.
 
     def __init__(self):
         self.coordinates: Dict[str, Tuple[float, float]] = {
@@ -44,30 +45,28 @@ class DeliveryNetwork:
         self._add_road("Riverside", "Customer", 6.0)
         self._add_road("East Junction", "Customer", 3.5)
         self._add_road("East Junction", "Hillcrest", 3.0)
-        self._add_road("South Depot", "RiverSide", 7.0)
+        self._add_road("South Depot", "Riverside", 7.0)
 
+    def _add_road(self, a: str, b: str, km: float) -> None:
+        self.graph[a][b] = km
+        self.graph[b][a] = km
 
-def _add_road(self, a: str, b: str, km: float) -> None:
-    self.graph[a][b] = km
-    self.graph[b][a] = km
+    def heuristic(self, node: str, goal: str) -> float:
+        x1, y1 = self.coordinates[node]
+        x2, y2 = self.coordinates[goal]
+        return 0.5 * hypot(x2 - x1, y2 - y1)
 
-
-def heuristic(self, node: str, goal: str) -> float:
-    x1, y1 = self.coordinates[node]
-    x2, y2 = self.coordinates[goal]
-    return 0.5 * hypot(x2 - x1, y2 - y1)
-
-
-def path_distance(self, path: List[str]) -> float:
-    return sum(self.graph[a][b] for a, b in zip(path, path[1:]))
+    def path_distance(self, path: List[str]) -> float:
+        return sum(self.graph[a][b] for a, b in zip(path, path[1:]))
 
 
 class BreadthFirstSearch:
+    # BFS returns the route with fewer edges, not the least weighted cost.
 
     @staticmethod
     def search(
         network: DeliveryNetwork, start: str, goal: str
-    ) -> Optional[SearchResult]:
+    ) -> Optional[SearchRes]:
         queue = deque([start])
         parent = {start: None}
         expanded = 0
@@ -90,15 +89,16 @@ class BreadthFirstSearch:
             path.append(node)
             node = parent[node]
         path.reverse()
-        return SearchResult(path, network.path_distance(path), expanded)
+        return SearchRes(path, network.path_distance(path), expanded)
 
 
 class AStarSearch:
+    # A* minimizes weighted distance when its heuristic is admissible.
 
     @staticmethod
     def search(
         network: DeliveryNetwork, start: str, goal: str
-    ) -> Optional[SearchResult]:
+    ) -> Optional[SearchRes]:
         frontier = []
         heappush(frontier, (network.heuristic(start, goal), 0.0, start))
         came_from = {start: None}
@@ -130,10 +130,11 @@ class AStarSearch:
             path.append(node)
             node = came_from[node]
         path.reverse()
-        return SearchResult(path, network.path_distance(path), expanded)
+        return SearchRes(path, network.path_distance(path), expanded)
 
 
 class Observer:
+    # Observer interface for delivery event notifications.
 
     def update(self, event: str, message: str) -> None:
         raise NotImplementedError
@@ -160,7 +161,7 @@ class Customer(Observer):
 
 
 class DeliverySystem:
-
+    # Subject: Manages observers and emits delivery events.
     def __init__(self, network: DeliveryNetwork):
         self.network = network
         self.observers: List[Observer] = []
@@ -169,11 +170,15 @@ class DeliverySystem:
         if observer not in self.observers:
             self.observers.append(observer)
 
+    def unsubscribe(self, observer: Observer) -> None:
+        if observer in self.observers:
+            self.observers.remove(observer)
+
     def notify(self, event: str, message: str) -> None:
         for observer in self.observers:
             observer.update(event, message)
 
-    def recalculate_route(self, start: str, goal: str) -> Optional[SearchResult]:
+    def recalculate_route(self, start: str, goal: str) -> Optional[SearchRes]:
         result = AStarSearch.search(self.network, start, goal)
         if result:
             route = " -> ".join(result.path)
@@ -183,8 +188,14 @@ class DeliverySystem:
             )
         return result
 
+    def complete_delivery(self, customer_name: str) -> None:
+        self.notify(
+            "delivery_completed",
+            f"Delivery to {customer_name} has been completed successfully.",
+        )
 
-def display_result(label: str, result: Optional[SearchResult]) -> None:
+
+def display_result(label: str, result: Optional[SearchRes]) -> None:
     if result is None:
         print(f"{label}: No route found.")
         return
@@ -193,9 +204,13 @@ def display_result(label: str, result: Optional[SearchResult]) -> None:
     print(f"{label} nodes expanded: {result.nodes_expanded}")
     print()
 
+
 def main() -> None:
     network = DeliveryNetwork()
     start, goal = "Warehouse", "Customer"
+
+    if start not in network.graph or goal not in network.graph:
+        raise ValueError(f"Start or goal node not in network: {start}, {goal}")
 
     bfs_result = BreadthFirstSearch.search(network, start, goal)
     astar_result = AStarSearch.search(network, start, goal)
@@ -212,7 +227,8 @@ def main() -> None:
                 / bfs_result.nodes_expanded
             ) * 100
             print(f"Node-expansion change (BFS baseline): {reduction:.1f}%")
-            print("A negative value indicates A* expanded more nodes in this test.")
+            print("""A negative value indicates
+            A* expanded more nodes in this test.""")
         print()
 
         driver = Driver("Alice")
