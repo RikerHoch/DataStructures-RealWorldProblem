@@ -1,34 +1,62 @@
-# Delivery Routing System
+# 🚚 Delivery Routing System
 
-A Python application that models a delivery network as a weighted graph and compares **Breadth-First Search (BFS)** and **A* Search** for finding routes from a warehouse to a customer.
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
+![Dependencies](https://img.shields.io/badge/Dependencies-Standard%20Library-brightgreen)
+![Algorithms](https://img.shields.io/badge/Algorithms-BFS%20%7C%20A*-blue)
+![Design Pattern](https://img.shields.io/badge/Design%20Pattern-Observer-purple)
 
-## Features
+A Python-based delivery routing simulation that uses a **weighted, undirected graph** to compare **Breadth-First Search (BFS)** and **A* Search**. It also demonstrates the **Observer design pattern** by notifying drivers when routes are recalculated and customers when deliveries are completed.
 
-- Weighted graph representing delivery locations and road connections.
-- BFS and A* search algorithm implementations.
-- Route paths, total distances, and node expansion counters.
-- Heuristic-based route searching with A*.
-- Object-oriented design using classes and modular functions.
-- Observer design pattern for driver and customer notifications.
+> **Coursework project:** Developed to demonstrate graph data structures, search algorithms, object-oriented programming, and event-driven notifications.
 
-## Technologies
+## 📌 Project Overview
 
-- **Language:** Python 3
-- **Concepts:** Graphs, search algorithms, algorithm complexity, object-oriented programming, and design patterns.
+The simulation models a delivery company that needs to find a route between a warehouse and a customer.
 
-## Getting Started
+Each location is represented as a node, each road as an edge, and each road has an associated distance in kilometres.
 
-1. Clone or download this repository.
-2. Ensure Python 3 is installed.
-3. Run the application:
+The program compares two search algorithms:
 
-   ```bash
-   python delivery_routing.py
-   ```
+- **BFS:** Finds the route with the fewest road connections.
+- **A* Search:** Uses road distances and a heuristic to find a shorter-distance route.
 
-## Project Purpose
+The project also includes a notification system using the Observer Pattern.
 
-This project explores how search algorithms can be applied to delivery routing, compares their performance, and demonstrates how software design patterns can support event-driven notifications.
+## ✨ Key Features
 
-*Developed as part of a programming assessment.*
+- 🗺️ **Weighted graph:** Nine delivery locations connected by 16 two-way roads.
+- 🔎 **Breadth-First Search:** Uses a queue to explore routes.
+- ⭐ **A* Search:** Uses a priority queue and distance heuristic.
+- 📊 **Performance comparison:** Displays route distances and expanded nodes.
+- 🔔 **Observer Pattern:** Notifies drivers and customers of delivery events.
+- 🧩 **Object-oriented design:** Uses classes, inheritance, and modular functions.
+- 🐍 **Standard Python libraries:** No external dependencies required.
 
+## 🛠️ Technologies
+
+| Technology | Purpose |
+|---|---|
+| Python 3 | Main programming language |
+| Dictionaries | Graph representation |
+| `collections.deque` | BFS queue |
+| `heapq` | A* priority queue |
+| `math.hypot` | Distance heuristic |
+| `dataclasses` | Search result storage |
+| Observer Pattern | Delivery notifications |
+
+## 📂 Project Structure
+
+```text
+Delivery-Routing-System/
+├── delivery_routing.py
+└── README.md
+```
+
+
+
+---
+
+<p align="center">
+  <strong>🧪 Clean data · 🏗️ Maintainable design · 📊 Useful reports</strong><br>
+  <sub>Developed for BACT 7603 Data Structures — Assessment 2, 2026.</sub>
+</p>
