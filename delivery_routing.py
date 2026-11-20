@@ -1,3 +1,5 @@
+"""Compare delivery routes and demonstrate the observer pattern."""
+
 from collections import deque
 from dataclasses import dataclass
 from heapq import heappush, heappop
@@ -7,15 +9,20 @@ from typing import List, Tuple, Dict, Optional
 
 @dataclass
 class SearchRes:
+    """Store the route, distance, and number of expanded nodes."""
+
     path: List[str]
     distance_km: float
     nodes_expanded: int
 
 
 class DeliveryNetwork:
+    """Represent a delivery network as a weighted, undirected graph."""
+
     # Weighted, undirected graph with approximate map coordinates.
 
     def __init__(self):
+        """Create the locations and roads in the delivery network."""
         self.coordinates: Dict[str, Tuple[float, float]] = {
             "Warehouse": (0, 0),
             "North Hub": (2, 4),
@@ -48,25 +55,31 @@ class DeliveryNetwork:
         self._add_road("South Depot", "Riverside", 7.0)
 
     def _add_road(self, a: str, b: str, km: float) -> None:
+        """Connect two locations with a road in both directions."""
         self.graph[a][b] = km
         self.graph[b][a] = km
 
     def heuristic(self, node: str, goal: str) -> float:
+        """Estimate the remaining distance to the goal."""
         x1, y1 = self.coordinates[node]
         x2, y2 = self.coordinates[goal]
         return 0.5 * hypot(x2 - x1, y2 - y1)
 
     def path_distance(self, path: List[str]) -> float:
+        """Calculate the total road distance of a route."""
         return sum(self.graph[a][b] for a, b in zip(path, path[1:]))
 
 
 class BreadthFirstSearch:
+    """Find routes with the fewest road connections."""
+
     # BFS returns the route with fewer edges, not the least weighted cost.
 
     @staticmethod
     def search(
         network: DeliveryNetwork, start: str, goal: str
     ) -> Optional[SearchRes]:
+        """Find a route with the fewest road connections."""
         queue = deque([start])
         parent = {start: None}
         expanded = 0
@@ -93,12 +106,15 @@ class BreadthFirstSearch:
 
 
 class AStarSearch:
+    """Find routes using A* search and a distance heuristic."""
+
     # A* minimizes weighted distance when its heuristic is admissible.
 
     @staticmethod
     def search(
         network: DeliveryNetwork, start: str, goal: str
     ) -> Optional[SearchRes]:
+        """Find a shortest-distance route using A* search."""
         frontier = []
         heappush(frontier, (network.heuristic(start, goal), 0.0, start))
         came_from = {start: None}
@@ -134,51 +150,67 @@ class AStarSearch:
 
 
 class Observer:
+    """Define the interface for delivery event observers."""
+
     # Observer interface for delivery event notifications.
 
     def update(self, event: str, message: str) -> None:
+        """Handle an event sent by the delivery system."""
         raise NotImplementedError
 
 
 class Driver(Observer):
+    """Receive route updates for a delivery driver."""
 
     def __init__(self, name: str):
+        """Create a driver with the given name."""
         self.name = name
 
     def update(self, event: str, message: str) -> None:
+        """Show route recalculation messages for this driver."""
         if event == "route_recalculated":
             print(f"Driver {self.name} received event '{event}': {message}")
 
 
 class Customer(Observer):
+    """Receive delivery completion notifications."""
 
     def __init__(self, name: str):
+        """Create a customer with the given name."""
         self.name = name
 
     def update(self, event: str, message: str) -> None:
+        """Show delivery completion messages for this customer."""
         if event == "delivery_completed":
             print(f"[Customer Notification] {self.name}: {message}")
 
 
 class DeliverySystem:
+    """Manage delivery observers and send event notifications."""
+
     # Subject: Manages observers and emits delivery events.
     def __init__(self, network: DeliveryNetwork):
+        """Set up the delivery network and observer link."""
         self.network = network
         self.observers: List[Observer] = []
 
     def subscribe(self, observer: Observer) -> None:
+        """Add an observer if it is not already subscribed."""
         if observer not in self.observers:
             self.observers.append(observer)
 
     def unsubscribe(self, observer: Observer) -> None:
+        """Remove an observer if it is subscribed."""
         if observer in self.observers:
             self.observers.remove(observer)
 
     def notify(self, event: str, message: str) -> None:
+        """Send an event message to all subscribed observers."""
         for observer in self.observers:
             observer.update(event, message)
 
     def recalculate_route(self, start: str, goal: str) -> Optional[SearchRes]:
+        """Find a new route and notify the observers."""
         result = AStarSearch.search(self.network, start, goal)
         if result:
             route = " -> ".join(result.path)
@@ -189,6 +221,7 @@ class DeliverySystem:
         return result
 
     def complete_delivery(self, customer_name: str) -> None:
+        """Notify the observers that a delivery is finished."""
         self.notify(
             "delivery_completed",
             f"Delivery to {customer_name} has been completed successfully.",
@@ -196,6 +229,7 @@ class DeliverySystem:
 
 
 def display_result(label: str, result: Optional[SearchRes]) -> None:
+    """Print the route, distance, and expanded node count."""
     if result is None:
         print(f"{label}: No route found.")
         return
@@ -206,6 +240,7 @@ def display_result(label: str, result: Optional[SearchRes]) -> None:
 
 
 def main() -> None:
+    """Compare routing algorithm and demonstrate observers."""
     network = DeliveryNetwork()
     start, goal = "Warehouse", "Customer"
 
