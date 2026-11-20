@@ -19,8 +19,6 @@ class SearchRes:
 class DeliveryNetwork:
     """Represent a delivery network as a weighted, undirected graph."""
 
-    # Weighted, undirected graph with approximate map coordinates.
-
     def __init__(self):
         """Create the locations and roads in the delivery network."""
         self.coordinates: Dict[str, Tuple[float, float]] = {
@@ -73,8 +71,6 @@ class DeliveryNetwork:
 class BreadthFirstSearch:
     """Find routes with the fewest road connections."""
 
-    # BFS returns the route with fewer edges, not the least weighted cost.
-
     @staticmethod
     def search(
         network: DeliveryNetwork, start: str, goal: str
@@ -107,8 +103,6 @@ class BreadthFirstSearch:
 
 class AStarSearch:
     """Find routes using A* search and a distance heuristic."""
-
-    # A* minimizes weighted distance when its heuristic is admissible.
 
     @staticmethod
     def search(
@@ -152,8 +146,6 @@ class AStarSearch:
 class Observer:
     """Define the interface for delivery event observers."""
 
-    # Observer interface for delivery event notifications.
-
     def update(self, event: str, message: str) -> None:
         """Handle an event sent by the delivery system."""
         raise NotImplementedError
@@ -188,7 +180,6 @@ class Customer(Observer):
 class DeliverySystem:
     """Manage delivery observers and send event notifications."""
 
-    # Subject: Manages observers and emits delivery events.
     def __init__(self, network: DeliveryNetwork):
         """Set up the delivery network and observer link."""
         self.network = network
